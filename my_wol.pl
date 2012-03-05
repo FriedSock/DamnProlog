@@ -34,3 +34,51 @@ test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame, ShortestG
  (NumMoves < RShortestGame -> ShortestGame is NumMoves ; ShortestGame is RShortestGame),
  TotalMoves is RTotalMoves + NumMoves,
  TotalTime is RTotalTime + End - Start.
+
+bloodlust(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, NewBoardState, Move),
+ NewBoardState == [Blue, Red],
+ ((PlayerColour == r) -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+     Blue2 < Blue))).
+ ((PlayerColour == b) -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+     Red2 > Red))).
+
+self_preservation(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, NewBoardState, Move),
+ NewBoardState == [Blue, Red],
+ ((PlayerColour == r) -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+     Red2 < Red))).
+ ((PlayerColour == b) -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+     Blue2 > Blue))).
+
+land_grab(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, NewBoardState, Move),
+ NewBoardState == [Blue, Red],
+ ((PlayerColour == r) -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+    (Red2 - Blue2) > (Red - Blue)))).
+ ((PlayerColour == b) -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+    (Blue2 - Red2) > (Blue - Red)))).
+
+%minimax(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
+% NewBoardState == [Blue, Red],
+% ((PlayerColour == r) -> (
+% board_after_move(r, CurrentBoardState, IntermediateBoardState, Move),
+% land_grab(b, IntermediateBoardState, [Blue, Red])
+% 
+% )),
+ 
+     
+
+board_after_move(PlayerColour, [Blue, Red], NewBoardState, Move) :-
+ ((PlayerColour == r) -> random_move(Red, Blue, Move)),
+ ((PlayerColour == b) -> random_move(Blue, Red, Move)),
+ alter_board(Move, CurrentBoardState, IntermediateBoardState),
+ next_generation(IntermediateBoardState, NewBoardState).
+
+

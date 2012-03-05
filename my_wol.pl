@@ -1,5 +1,6 @@
 test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
- test(N, FirstPlayerStrategy, SecondPlayerStrategy, NumDraws, FPWins, SPWins, LongestGame, ShortestGame, TotalMoves, TotalTime),
+ test(N, FirstPlayerStrategy, SecondPlayerStrategy, NumDraws, FPWins, SPWins,
+     LongestGame, ShortestGame, TotalMoves, TotalTime),
  format('Number of draws: ~d~n', [NumDraws]),
  format('Number of wins for player 1 (blue): ~d~n', [FPWins]),
  format('Number of wins for player 2 (red): ~d~n', [SPWins]),
@@ -8,12 +9,15 @@ test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
  format('Average game length (including exhaustives): ~d~n', [TotalMoves / N]),
  format('Average game time: ~d~n', [TotalTime / N]).
 
-test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame, ShortestGame, TotalMoves, TotalTime) :-
+test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
+    ShortestGame, TotalMoves, TotalTime) :-
  !,
  statistics(walltime, [Start,_]),
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(walltime, [End,_]),
- (member(WinningPlayer, ['draw', 'exhaust']) -> NumDraws is 1 ; NumDraws is 0),
+ (member(WinningPlayer, ['draw', 'exhaust']) ->
+   NumDraws is 1 ;
+   NumDraws is 0),
  (WinningPlayer == 'b' -> FPWins is 1 ; FPWins is 0),
  (WinningPlayer == 'r' -> SPWins is 1 ; SPWins is 0),
  (WinningPlayer == 'exhaust' -> LongestGame is 0 ; LongestGame is NumMoves),
@@ -21,13 +25,17 @@ test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame, ShortestG
  TotalMoves is NumMoves,
  TotalTime is End - Start.
 
-test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame, ShortestGame, TotalMoves, TotalTime) :-
+test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
+    ShortestGame, TotalMoves, TotalTime) :-
  NewN is N - 1,
- test(NewN, FPStrategy, SPStrategy, RNumDraws, RFPWins, RSPWins, RLongestGame, RShortestGame, RTotalMoves, RTotalTime),
+ test(NewN, FPStrategy, SPStrategy, RNumDraws, RFPWins, RSPWins, RLongestGame,
+     RShortestGame, RTotalMoves, RTotalTime),
  statistics(walltime, [Start,_]),
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(walltime, [End,_]),
- (member(WinningPlayer, ['draw', 'exhaust']) -> NumDraws is RNumDraws + 1 ; NumDraws is RNumDraws),
+ (member(WinningPlayer, ['draw', 'exhaust']) ->
+   NumDraws is RNumDraws + 1 ;
+   NumDraws is RNumDraws),
  (WinningPlayer == 'b' -> FPWins is RFPWins + 1 ; FPWins is RFPWins),
  (WinningPlayer == 'r' -> SPWins is RSPWins + 1 ; SPWins is RSPWins),
  (NumMoves > RLongestGame ->
@@ -35,6 +43,8 @@ test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame, ShortestG
      LongestGame is RLongestGame ;
      LongestGame is NumMoves) ;
    LongestGame is RLongestGame),
- (NumMoves < RShortestGame -> ShortestGame is NumMoves ; ShortestGame is RShortestGame),
+ (NumMoves < RShortestGame ->
+   ShortestGame is NumMoves ;
+   ShortestGame is RShortestGame),
  TotalMoves is RTotalMoves + NumMoves,
  TotalTime is RTotalTime + End - Start.

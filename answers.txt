@@ -1,5 +1,15 @@
 1. -
 
-2. [[[1,1], [2,6], [3,4], [3,5], [3,8], [4,1], [4,2], [5,7], [6,2], [7,1], [7,3], [7,5]], [[1,8], [2,2], [2,8], [3,7], [4,6], [5,3], [6,6], [7,6], [7,7], [7,8], [8,3], [8,7]]].
+2. [[[1,1], [2,6], [3,4], [3,5], [3,8], [4,1], [4,2], [5,7], [6,2], [7,1], [7,3], [7,5]],
+    [[1,8], [2,2], [2,8], [3,7], [4,6], [5,3], [6,6], [7,6], [7,7], [7,8], [8,3], [8,7]]].
 
 3.
+Number of draws: 40
+Number of wins for player 1 (blue): 472
+Number of wins for player 2 (red): 487
+Longest (non-exhaustive) game: 52
+Shortest game: 2
+Average game length (including exhaustives): 11
+Average game time: 101
+
+4. No. If we run the test multiple times we find out that sometimes the blue player wins more times while sometimes the red player wins more times. All in all both of the players have the same probability of winning.

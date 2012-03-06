@@ -59,55 +59,55 @@ bloodlust(r, [Blue, Red], [Blue, NewRed], Move) :-
  bloodlust_best_move(Red, Blue, PossMoves, 100, Move),
  alter_board(Move, Red, NewRed).
 
-bloodlust_best_move(_, _, [Move|[]], _, Move).
+bloodlust_best_move(_, _, [], _, Move, Move).
 
-bloodlust_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
+bloodlust_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, OtherPlayerAlive, NewOtherPlayerAlive),
  next_generation([Alive, NewOtherPlayerAlive], [_, NextOtherPlayerAlive]),
  length(NextOtherPlayerAlive, MoveScore),
  (MoveScore < Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- bloodlust_best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+ bloodlust_best_move(Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Self preservation strategy
 self_preservation(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- self_preservation_best_move(Blue, Red, PossMoves, 0, Move),
+ self_preservation_best_move(Blue, Red, PossMoves, -100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 self_preservation(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- self_preservation_best_move(Red, Blue, PossMoves, 0, Move),
+ self_preservation_best_move(Red, Blue, PossMoves, -100, _, Move),
  alter_board(Move, Red, NewRed).
 
-self_preservation_best_move(_, _, [Move|[]], _, Move).
+self_preservation_best_move(_, _, [], _, Move, Move).
 
-self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
+self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, Alive, NewAlive),
  next_generation([NewAlive, OtherPlayerAlive], [NextAlive, _]),
  length(NextAlive, MoveScore),
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- self_preservation_best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+ self_preservation_best_move(Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Land grab strategy
 land_grab(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- land_grab_best_move(Blue, Red, PossMoves, 0, Move),
+ land_grab_best_move(Blue, Red, PossMoves, -100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 land_grab(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- land_grab_best_move(Red, Blue, PossMoves, 0, Move),
+ land_grab_best_move(Red, Blue, PossMoves, -100, _, Move),
  alter_board(Move, Red, NewRed).
 
-land_grab_best_move(_, _, [Move|[]], _, Move).
+land_grab_best_move(_, _, [], _, Move, Move).
 
-land_grab_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
+land_grab_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, Alive, NewAlive),
  next_generation([NewAlive, OtherPlayerAlive], [NextAlive, NextOtherPlayerAlive]),
  length(NextAlive, NextAliveLength),
@@ -116,7 +116,34 @@ land_grab_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- land_grab_best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+ land_grab_best_move(Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
+
+
+% Minimax strategy
+minimax(b, [Blue, Red], [NewBlue, Red], Move) :-
+ poss_moves(Blue, Red, PossMoves),
+ minimax_best_move(r, Blue, Red, PossMoves, -100, _, Move),
+ alter_board(Move, Blue, NewBlue).
+
+minimax(r, [Blue, Red], [Blue, NewRed], Move) :-
+ poss_moves(Red, Blue, PossMoves),
+ minimax_best_move(b, Red, Blue, PossMoves, -100, _, Move),
+ alter_board(Move, Red, NewRed).
+
+minimax_best_move(_, _, _, [], _, Move, Move).
+
+minimax_best_move(OtherPlayer, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
+ alter_board(H, Alive, NewAlive),
+ next_generation([NewAlive, OtherPlayerAlive], Next),
+ land_grab(OtherPlayer, Next, AfterLandGrab, _),
+ next_generation(AfterLandGrab, [NextAlive, NextOtherPlayerAlive]),
+ length(NextAlive, NextAliveLength),
+ length(NextOtherPlayerAlive, NextOtherPlayerAliveLength),
+ MoveScore is NextAliveLength - NextOtherPlayerAliveLength,
+ (MoveScore > Score ->
+   (NewScore is MoveScore , NewMove = H) ;
+   (NewScore is Score , NewMove = Move)),
+ minimax_best_move(OtherPlayer, Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Helper predicate for generating possible moves
@@ -126,38 +153,3 @@ poss_moves(Alive, OtherPlayerAlive, PossMoves) :-
    (member([A,B], Alive), neighbour_position(A,B,[MA,MB]),
 	 \+member([MA,MB],Alive), \+member([MA,MB],OtherPlayerAlive)),
    PossMoves).
-
-
-
-
-
-minimax(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
- board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
- write('.'),
- (PlayerColour == 'r' -> (
-     land_grab('b', [Blue, Red], [Blue2, Red2], Move3),
- \+ (board_after_move(PlayerColour, CurrentBoardState, IntermediateBoardState, Move2),
-     land_grab('b', IntermediateBoardState, [Blue3, Red3], Move4),
-     length(Red2, R2L), length(Red3, R3L), length(Blue2, B2L), length(Blue3, B3L), 
-     (B3L - R3L) < (B2L - R2L)));
-    (land_grab('r', [Blue, Red], [Blue2, Red2], Move3),
- \+ (board_after_move(PlayerColour, CurrentBoardState, IntermediateBoardState, Move2),
-     land_grab('r', IntermediateBoardState, [Blue3, Red3], Move4),
-     length(Red2, R2L), length(Red3, R3L), length(Blue2, B2L), length(Blue3, B3L), 
-     (R3L - B3L) < (R2L - B2L)))).
-
-board_after_move(PlayerColour, [Blue, Red], NewBoardState, Move) :-
- (PlayerColour == 'r' -> (possible_move(Red, Blue, Move),
-                          alter_board(Move, Blue, NewBlue),
-                          next_generation([NewBlue, Red], NewBoardState));
-                          (possible_move(Blue, Red, Move)),
-                          alter_board(Move, Red,  NewRed),
-                          next_generation([Blue, NewRed], NewBoardState)).
-
-possible_move(Alive, OtherPlayerAlive, Move) :-    
- findall([A,B,MA,MB],(member([A,B], Alive),
-           neighbour_position(A,B,[MA,MB]),
-           \+member([MA,MB],Alive),
-           \+member([MA,MB],OtherPlayerAlive)),
-       PossMoves),
- member(Move, PossMoves).

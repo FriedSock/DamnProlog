@@ -63,11 +63,12 @@ bloodlust_best_move(_, _, [Move|[]], _, Move).
 
 bloodlust_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
  alter_board(H, OtherPlayerAlive, NewOtherPlayerAlive),
- length(NewOtherPlayerAlive, MoveScore),
+ next_generation([Alive, NewOtherPlayerAlive], [_, NextOtherPlayerAlive]),
+ length(NextOtherPlayerAlive, MoveScore),
  (MoveScore < Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+ bloodlust_best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
 
 
 % Self preservation strategy
@@ -85,11 +86,12 @@ self_preservation_best_move(_, _, [Move|[]], _, Move).
 
 self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
  alter_board(H, Alive, NewAlive),
- length(NewAlive, MoveScore),
+ next_generation([NewAlive, OtherPlayerAlive], [NextAlive, _]),
+ length(NextAlive, MoveScore),
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+ self_preservation_best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
 
 
 % Land grab strategy
@@ -107,13 +109,14 @@ land_grab_best_move(_, _, [Move|[]], _, Move).
 
 land_grab_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
  alter_board(H, Alive, NewAlive),
- length(NewAlive, NewAliveLength),
- length(OtherPlayerAlive, OtherPlayerAliveLength),
- MoveScore is NewAliveLength - OtherPlayerAliveLength,
+ next_generation([NewAlive, OtherPlayerAlive], [NextAlive, NextOtherPlayerAlive]),
+ length(NextAlive, NextAliveLength),
+ length(NextOtherPlayerAlive, NextOtherPlayerAliveLength),
+ MoveScore is NextAliveLength - NextOtherPlayerAliveLength,
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+ land_grab_best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
 
 
 % Helper predicate for generating possible moves

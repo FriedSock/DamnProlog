@@ -15,7 +15,7 @@ test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
  statistics(walltime, [Start,_]),
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(walltime, [End,_]),
- (member(WinningPlayer, ['draw', 'exhaust']) ->
+ (member(WinningPlayer, ['draw', 'exhaust', 'stalemate']) ->
    NumDraws is 1 ;
    NumDraws is 0),
  (WinningPlayer == 'b' -> FPWins is 1 ; FPWins is 0),
@@ -33,7 +33,7 @@ test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
  statistics(walltime, [Start,_]),
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(walltime, [End,_]),
- (member(WinningPlayer, ['draw', 'exhaust']) ->
+ (member(WinningPlayer, ['draw', 'exhaust', 'stalemate']) ->
    NumDraws is RNumDraws + 1 ;
    NumDraws is RNumDraws),
  (WinningPlayer == 'b' -> FPWins is RFPWins + 1 ; FPWins is RFPWins),

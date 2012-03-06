@@ -79,13 +79,20 @@ land_grab(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
     (Blue2 - Red2) > (Blue - Red)))).
 
-%minimax(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
-% NewBoardState == [Blue, Red],
-% ((PlayerColour == r) -> (
-% board_after_move(r, CurrentBoardState, IntermediateBoardState, Move),
-% land_grab(b, IntermediateBoardState, [Blue, Red])
-% 
-% )),
+minimax(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
+ NewBoardState == [Blue, Red],
+ ((PlayerColour == r) -> (
+ board_after_move(r, CurrentBoardState, IntermediateBoardState, Move),
+ land_grab(b, IntermediateBoardState, [Blue, Red]),
+ \+ (board_after_move(r, CurrentBoardState, IntermediateBoardState2, Move2),
+     land_grab(b, IntermediateBoardState2, [Blue2, Red2]),
+     (Blue2 - Red2) < (Blue - Red)))),
+ ((PlayerColour == b) -> (
+ board_after_move(b, CurrentBoardState, IntermediateBoardState, Move),
+ land_grab(r, IntermediateBoardState, [Blue, Red]),
+ \+ (board_after_move(b, CurrentBoardState, IntermediateBoardState2, Move2),
+     land_grab(r, IntermediateBoardState2, [Blue2, Red2]),
+     (Red2 - Blue2) < (Red - Blue)))).
  
      
 

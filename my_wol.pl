@@ -111,9 +111,17 @@ minimax(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
      
 
 board_after_move(PlayerColour, [Blue, Red], NewBoardState, Move) :-
- (PlayerColour == 'r' ->
-   random_move(Red, Blue, Move) ;
-   random_move(Blue, Red, Move)),
- alter_board(Move, [Blue, Red], IntermediateBoardState),
- next_generation(IntermediateBoardState, NewBoardState).
+ (PlayerColour == 'r' -> (possible_move(Red, Blue, Move),
+                          alter_board(Move, Blue, NewBlue),
+                          next_generation([NewBlue, Red], NewBoardState));
+                          (possible_move(Blue, Red, Move)),
+                          alter_board(Move, Red,  NewRed),
+                          next_generation([Blue, NewRed], NewBoardState)).
 
+possible_move(Alive, OtherPlayerAlive, Move) :-    
+ findall([A,B,MA,MB],(member([A,B], Alive),
+           neighbour_position(A,B,[MA,MB]),
+           \+member([MA,MB],Alive),
+           \+member([MA,MB],OtherPlayerAlive)),
+       PossMoves),
+ member(Move, PossMoves).

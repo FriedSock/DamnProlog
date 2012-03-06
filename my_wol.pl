@@ -51,12 +51,12 @@ test(N, FPStrategy, SPStrategy,
 % Bloodlust strategy
 bloodlust(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- bloodlust_best_move(Blue, Red, PossMoves, 100, Move),
+ bloodlust_best_move(Blue, Red, PossMoves, 100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 bloodlust(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- bloodlust_best_move(Red, Blue, PossMoves, 100, Move),
+ bloodlust_best_move(Red, Blue, PossMoves, 100, _, Move),
  alter_board(Move, Red, NewRed).
 
 bloodlust_best_move(_, _, [], _, Move, Move).

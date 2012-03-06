@@ -93,15 +93,16 @@ minimax(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
  write('.'),
  (PlayerColour == 'r' -> (
+     land_grab('b', [Blue, Red], [Blue2, Red2], Move3),
  \+ (board_after_move(PlayerColour, CurrentBoardState, IntermediateBoardState, Move2),
-     board_after_move('b', IntermediateBoardState, [Blue2, Red2], Move3),
-     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
-     (B2L - R2L) < (BL - RL)));
-    (
+     land_grab('b', IntermediateBoardState, [Blue3, Red3], Move4),
+     length(Red2, R2L), length(Red3, R3L), length(Blue2, B2L), length(Blue3, B3L), 
+     (B3L - R3L) < (B2L - R2L)));
+    (land_grab('r', [Blue, Red], [Blue2, Red2], Move3),
  \+ (board_after_move(PlayerColour, CurrentBoardState, IntermediateBoardState, Move2),
-     board_after_move('r', IntermediateBoardState, [Blue2, Red2], Move3),
-     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
-     (R2L - B2L) < (RL - BL)))).
+     land_grab('r', IntermediateBoardState, [Blue3, Red3], Move4),
+     length(Red2, R2L), length(Red3, R3L), length(Blue2, B2L), length(Blue3, B3L), 
+     (R3L - B3L) < (R2L - B2L)))).
 
 board_after_move(PlayerColour, [Blue, Red], NewBoardState, Move) :-
  (PlayerColour == 'r' -> (possible_move(Red, Blue, Move),

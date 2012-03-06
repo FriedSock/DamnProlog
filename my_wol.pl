@@ -1,3 +1,5 @@
+:- compile(war_of_life).
+
 test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
  % Run the tests
  test(N, FirstPlayerStrategy, SecondPlayerStrategy, NumDraws, FPWins, SPWins,

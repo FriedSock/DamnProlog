@@ -25,11 +25,21 @@ test(N, FPStrategy, SPStrategy,
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(runtime, [End,_]),
  % Set output variables
- ((\+ (WinningPlayer = b ; WinningPlayer = r)) -> ONumDraws is INumDraws + 1 ; ONumDraws is INumDraws),
- (WinningPlayer = b -> OFPWins is IFPWins + 1 ; OFPWins is IFPWins),
- (WinningPlayer = r -> OSPWins is ISPWins + 1 ; OSPWins is ISPWins),
- ((NumMoves < 250 , NumMoves > ILongestGame) -> OLongestGame is NumMoves ; OLongestGame is ILongestGame),
- (NumMoves < IShortestGame -> OShortestGame is NumMoves ; OShortestGame is IShortestGame),
+ ((\+ (WinningPlayer = b ; WinningPlayer = r)) ->
+   ONumDraws is INumDraws + 1 ;
+   ONumDraws is INumDraws),
+ (WinningPlayer = b ->
+   OFPWins is IFPWins + 1 ;
+   OFPWins is IFPWins),
+ (WinningPlayer = r ->
+   OSPWins is ISPWins + 1 ;
+   OSPWins is ISPWins),
+ ((NumMoves < 250 , NumMoves > ILongestGame) ->
+   OLongestGame is NumMoves ;
+   OLongestGame is ILongestGame),
+ (NumMoves < IShortestGame ->
+   OShortestGame is NumMoves ;
+   OShortestGame is IShortestGame),
  OTotalMoves is ITotalMoves + NumMoves,
  OTotalTime is ITotalTime + End - Start,
  % Recurse

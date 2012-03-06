@@ -95,7 +95,7 @@ self_preservation_best_move(Player, Alive, OtherPlayerAlive, [H|T], Score, Move,
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- self_preservation_best_move(Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
+ self_preservation_best_move(Player, Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Land grab strategy
@@ -122,23 +122,23 @@ land_grab_best_move(Player, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- land_grab_best_move(Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
+ land_grab_best_move(Player, Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Minimax strategy
 minimax(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- minimax_best_move(r, Blue, Red, PossMoves, -100, _, Move),
+ minimax_best_move(b, r, Blue, Red, PossMoves, -100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 minimax(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- minimax_best_move(b, Red, Blue, PossMoves, -100, _, Move),
+ minimax_best_move(r, b, Red, Blue, PossMoves, -100, _, Move),
  alter_board(Move, Red, NewRed).
 
-minimax_best_move(_, _, _, [], _, Move, Move).
+minimax_best_move(_, _, _, _, [], _, Move, Move).
 
-minimax_best_move(OtherPlayer, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
+minimax_best_move(Player, OtherPlayer, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, Alive, NewAlive),
  (Player = r ->
    next_generation([OtherPlayerAlive, NewAlive], Next) ;
@@ -153,7 +153,7 @@ minimax_best_move(OtherPlayer, Alive, OtherPlayerAlive, [H|T], Score, Move, OutM
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- minimax_best_move(OtherPlayer, Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
+ minimax_best_move(Player, OtherPlayer, Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Helper predicate for generating possible moves

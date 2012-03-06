@@ -67,29 +67,30 @@ bloodlust_best_move(Player, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove
    next_generation([NewOtherPlayerAlive, Alive], [NextOtherPlayerAlive, _]) ;
    next_generation([Alive, NewOtherPlayerAlive], [_, NextOtherPlayerAlive])),
  length(NextOtherPlayerAlive, MoveScore),
- format('~d~q~n',[MoveScore, H]),
  (MoveScore < Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),
- bloodlust_best_move(Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
+ bloodlust_best_move(Player, Alive, OtherPlayerAlive, T, NewScore, NewMove, OutMove).
 
 
 % Self preservation strategy
 self_preservation(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- self_preservation_best_move(Blue, Red, PossMoves, -100, _, Move),
+ self_preservation_best_move(b, Blue, Red, PossMoves, -100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 self_preservation(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- self_preservation_best_move(Red, Blue, PossMoves, -100, _, Move),
+ self_preservation_best_move(r, Red, Blue, PossMoves, -100, _, Move),
  alter_board(Move, Red, NewRed).
 
-self_preservation_best_move(_, _, [], _, Move, Move).
+self_preservation_best_move(_, _, _, [], _, Move, Move).
 
-self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
+self_preservation_best_move(Player, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, Alive, NewAlive),
- next_generation([NewAlive, OtherPlayerAlive], [NextAlive, _]),
+ (Player = r ->
+   next_generation([OtherPlayerAlive, NewAlive], [_, NextAlive]) ;
+   next_generation([NewAlive, OtherPlayerAlive], [NextAlive, _])),
  length(NextAlive, MoveScore),
  (MoveScore > Score ->
    (NewScore is MoveScore , NewMove = H) ;
@@ -100,19 +101,21 @@ self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove
 % Land grab strategy
 land_grab(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- land_grab_best_move(Blue, Red, PossMoves, -100, _, Move),
+ land_grab_best_move(b, Blue, Red, PossMoves, -100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 land_grab(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- land_grab_best_move(Red, Blue, PossMoves, -100, _, Move),
+ land_grab_best_move(r, Red, Blue, PossMoves, -100, _, Move),
  alter_board(Move, Red, NewRed).
 
-land_grab_best_move(_, _, [], _, Move, Move).
+land_grab_best_move(_, _, _, [], _, Move, Move).
 
-land_grab_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
+land_grab_best_move(Player, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, Alive, NewAlive),
- next_generation([NewAlive, OtherPlayerAlive], [NextAlive, NextOtherPlayerAlive]),
+ (Player = r ->
+   next_generation([OtherPlayerAlive, NewAlive], [NextOtherPlayerAlive, NextAlive]) ;
+   next_generation([NewAlive, OtherPlayerAlive], [NextAlive, NextOtherPlayerAlive])),
  length(NextAlive, NextAliveLength),
  length(NextOtherPlayerAlive, NextOtherPlayerAliveLength),
  MoveScore is NextAliveLength - NextOtherPlayerAliveLength,
@@ -137,9 +140,13 @@ minimax_best_move(_, _, _, [], _, Move, Move).
 
 minimax_best_move(OtherPlayer, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, Alive, NewAlive),
- next_generation([NewAlive, OtherPlayerAlive], Next),
+ (Player = r ->
+   next_generation([OtherPlayerAlive, NewAlive], Next) ;
+   next_generation([NewAlive, OtherPlayerAlive], Next)),
  land_grab(OtherPlayer, Next, AfterLandGrab, _),
- next_generation(AfterLandGrab, [NextAlive, NextOtherPlayerAlive]),
+ (Player = r ->
+   next_generation(AfterLandGrab, [NextOtherPlayerAlive, NextAlive]) ;
+   next_generation(AfterLandGrab, [NextAlive, NextOtherPlayerAlive])),
  length(NextAlive, NextAliveLength),
  length(NextOtherPlayerAlive, NextOtherPlayerAliveLength),
  MoveScore is NextAliveLength - NextOtherPlayerAliveLength,

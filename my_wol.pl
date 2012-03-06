@@ -81,7 +81,7 @@ land_grab(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  (PlayerColour == 'r' -> (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
      length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
-     (R2L - B2L) > (RL -BL)));
+     (R2L - B2L) > (RL - BL)));
     (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
      length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 

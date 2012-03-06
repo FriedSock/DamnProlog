@@ -2,8 +2,8 @@
 
 test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
  % Run the tests
- test(N, FirstPlayerStrategy, SecondPlayerStrategy, NumDraws, FPWins, SPWins,
-     LongestGame, ShortestGame, TotalMoves, TotalTime),
+ test(N, FirstPlayerStrategy, SecondPlayerStrategy, [0, 0, 0, 250, 0, 0, 0],
+  [NumDraws, FPWins, SPWins, LongestGame, ShortestGame, TotalMoves, TotalTime]),
  % Print stats
  format('Number of draws: ~d~n', [NumDraws]),
  format('Number of wins for player 1 (blue): ~d~n', [FPWins]),
@@ -13,52 +13,30 @@ test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
  format('Average game length (including exhaustives): ~d~n', [TotalMoves / N]),
  format('Average game time: ~d~n', [TotalTime / N]).
 
-% Base case for the test predicate
-test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
-    ShortestGame, TotalMoves, TotalTime) :-
- !,
- % Run and time the test
- statistics(walltime, [Start,_]),
- play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
- statistics(walltime, [End,_]),
- % Set output variables
- (member(WinningPlayer, ['draw', 'exhaust', 'stalemate']) ->
-   NumDraws is 1 ;
-   NumDraws is 0),
- (WinningPlayer == 'b' -> FPWins is 1 ; FPWins is 0),
- (WinningPlayer == 'r' -> SPWins is 1 ; SPWins is 0),
- (WinningPlayer == 'exhaust' -> LongestGame is 0 ; LongestGame is NumMoves),
- ShortestGame is NumMoves,
- TotalMoves is NumMoves,
- TotalTime is End - Start.
+% Base case
+test(0, _, _, I, I) :- !.
 
 % Recursive case for the test predicate
-test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
-    ShortestGame, TotalMoves, TotalTime) :-
+test(N, FPStrategy, SPStrategy,
+  [INumDraws, IFPWins, ISPWins, ILongestGame, IShortestGame, ITotalMoves, ITotalTime],
+  O) :-
+ % Run and time the test
+ statistics(runtime, [Start,_]),
+ play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
+ statistics(runtime, [End,_]),
+ % Set output variables
+ ((\+ (WinningPlayer = b ; WinningPlayer = r)) -> ONumDraws is INumDraws + 1 ; ONumDraws is INumDraws),
+ (WinningPlayer = b -> OFPWins is IFPWins + 1 ; OFPWins is IFPWins),
+ (WinningPlayer = r -> OSPWins is ISPWins + 1 ; OSPWins is ISPWins),
+ ((NumMoves < 250 , NumMoves > ILongestGame) -> OLongestGame is NumMoves ; OLongestGame is ILongestGame),
+ (NumMoves < IShortestGame -> OShortestGame is NumMoves ; OShortestGame is IShortestGame),
+ OTotalMoves is ITotalMoves + NumMoves,
+ OTotalTime is ITotalTime + End - Start,
  % Recurse
  NewN is N - 1,
- test(NewN, FPStrategy, SPStrategy, RNumDraws, RFPWins, RSPWins, RLongestGame,
-     RShortestGame, RTotalMoves, RTotalTime),
- % Run and time the test
- statistics(walltime, [Start,_]),
- play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
- statistics(walltime, [End,_]),
- % Set output variables
- (member(WinningPlayer, ['draw', 'exhaust', 'stalemate']) ->
-   NumDraws is RNumDraws + 1 ;
-   NumDraws is RNumDraws),
- (WinningPlayer == 'b' -> FPWins is RFPWins + 1 ; FPWins is RFPWins),
- (WinningPlayer == 'r' -> SPWins is RSPWins + 1 ; SPWins is RSPWins),
- (NumMoves > RLongestGame ->
-   (WinningPlayer == 'exhaust' ->
-     LongestGame is RLongestGame ;
-     LongestGame is NumMoves) ;
-   LongestGame is RLongestGame),
- (NumMoves < RShortestGame ->
-   ShortestGame is NumMoves ;
-   ShortestGame is RShortestGame),
- TotalMoves is RTotalMoves + NumMoves,
- TotalTime is RTotalTime + End - Start.
+ test(NewN, FPStrategy, SPStrategy,
+  [ONumDraws, OFPWins, OSPWins, OLongestGame, OShortestGame, OTotalMoves, OTotalTime], O).
+
 
 bloodlust(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),

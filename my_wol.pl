@@ -73,10 +73,10 @@ self_preservation(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
  (PlayerColour == 'r' -> (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Blue2, B2L), length(Blue, BL), B2L > BL));
+     length(Red2, R2L), length(Red, RL), R2L > RL));
     (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Red2, R2L), length(Red, RL), R2L > RL))).
+     length(Blue2, B2L), length(Blue, BL), B2L > BL))).
 
 land_grab(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),

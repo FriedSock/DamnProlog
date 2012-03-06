@@ -111,9 +111,9 @@ minimax(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
      
 
 board_after_move(PlayerColour, [Blue, Red], NewBoardState, Move) :-
- ((PlayerColour == 'r') -> random_move(Red, Blue, Move)),
- ((PlayerColour == 'b') -> random_move(Blue, Red, Move)),
+ (PlayerColour == 'r' ->
+   random_move(Red, Blue, Move) ;
+   random_move(Blue, Red, Move)),
  alter_board(Move, [Blue, Red], IntermediateBoardState),
  next_generation(IntermediateBoardState, NewBoardState).
-
 

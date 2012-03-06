@@ -2,7 +2,7 @@
 
 test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
  % Run the tests
- test(N, FirstPlayerStrategy, SecondPlayerStrategy, [0, 0, 0, 250, 0, 0, 0],
+ test(N, FirstPlayerStrategy, SecondPlayerStrategy, [0, 0, 0, 0, 250, 0, 0],
   [NumDraws, FPWins, SPWins, LongestGame, ShortestGame, TotalMoves, TotalTime]),
  % Print stats
  format('Number of draws: ~d~n', [NumDraws]),
@@ -48,22 +48,62 @@ test(N, FPStrategy, SPStrategy,
   [ONumDraws, OFPWins, OSPWins, OLongestGame, OShortestGame, OTotalMoves, OTotalTime], O).
 
 
-bloodlust(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
- board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
- (PlayerColour == 'r' ->
-   (\+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Blue2, B2L), length(Blue, BL), B2L < BL)) ;
-   (\+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Red2, R2L), length(Red, RL), R2L < RL))).
+% Bloodlust strategy
+bloodlust(b, [Blue, Red], [NewBlue, Red], Move) :-
+ poss_moves(Blue, Red, PossMoves),
+ bloodlust_best_move(Blue, Red, PossMoves, 100, Move),
+ alter_board(Move, Blue, NewBlue).
 
-self_preservation(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
- board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
- (PlayerColour == 'r' -> (
- \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Red2, R2L), length(Red, RL), R2L > RL));
-    (
- \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Blue2, B2L), length(Blue, BL), B2L > BL))).
+bloodlust(r, [Blue, Red], [Blue, NewRed], Move) :-
+ poss_moves(Red, Blue, PossMoves),
+ bloodlust_best_move(Red, Blue, PossMoves, 100, Move),
+ alter_board(Move, Red, NewRed).
+
+bloodlust_best_move(_, _, [Move|[]], _, Move).
+
+bloodlust_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
+ alter_board(H, OtherPlayerAlive, NewOtherPlayerAlive),
+ length(NewOtherPlayerAlive, MoveScore),
+ (MoveScore < Score ->
+   (NewScore is MoveScore , NewMove = H) ;
+   (NewScore is Score , NewMove = Move)),
+ best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+
+
+% Self preservation strategy
+self_preservation(b, [Blue, Red], [NewBlue, Red], Move) :-
+ poss_moves(Blue, Red, PossMoves),
+ self_preservation_best_move(Blue, Red, PossMoves, 0, Move),
+ alter_board(Move, Blue, NewBlue).
+
+self_preservation(r, [Blue, Red], [Blue, NewRed], Move) :-
+ poss_moves(Red, Blue, PossMoves),
+ self_preservation_best_move(Red, Blue, PossMoves, 0, Move),
+ alter_board(Move, Red, NewRed).
+
+self_preservation_best_move(_, _, [Move|[]], _, Move).
+
+self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
+ alter_board(H, Alive, NewAlive),
+ length(NewAlive, MoveScore),
+ (MoveScore > Score ->
+   (NewScore is MoveScore , NewMove = H) ;
+   (NewScore is Score , NewMove = Move)),
+ best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+
+
+% Helper predicate for generating possible moves
+poss_moves(Alive, OtherPlayerAlive, PossMoves) :-
+ findall(
+   [A,B,MA,MB],
+   (member([A,B], Alive), neighbour_position(A,B,[MA,MB]),
+	 \+member([MA,MB],Alive), \+member([MA,MB],OtherPlayerAlive)),
+   PossMoves).
+
+
+
+
+
 
 land_grab(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),

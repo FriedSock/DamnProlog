@@ -62,11 +62,10 @@ test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
 
 bloodlust(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
- (PlayerColour == 'r' -> (
- \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Blue2, B2L), length(Blue, BL), B2L < BL));
-    (
- \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+ (PlayerColour == 'r' ->
+   (\+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
+     length(Blue2, B2L), length(Blue, BL), B2L < BL)) ;
+   (\+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
      length(Red2, R2L), length(Red, RL), R2L < RL))).
 
 self_preservation(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-

@@ -92,6 +92,30 @@ self_preservation_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
  best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
 
 
+% Land grab strategy
+land_grab(b, [Blue, Red], [NewBlue, Red], Move) :-
+ poss_moves(Blue, Red, PossMoves),
+ land_grab_best_move(Blue, Red, PossMoves, 0, Move),
+ alter_board(Move, Blue, NewBlue).
+
+land_grab(r, [Blue, Red], [Blue, NewRed], Move) :-
+ poss_moves(Red, Blue, PossMoves),
+ land_grab_best_move(Red, Blue, PossMoves, 0, Move),
+ alter_board(Move, Red, NewRed).
+
+land_grab_best_move(_, _, [Move|[]], _, Move).
+
+land_grab_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move) :-
+ alter_board(H, Alive, NewAlive),
+ length(NewAlive, NewAliveLength),
+ length(OtherPlayerAlive, OtherPlayerAliveLength),
+ MoveScore is NewAliveLength - OtherPlayerAliveLength,
+ (MoveScore > Score ->
+   (NewScore is MoveScore , NewMove = H) ;
+   (NewScore is Score , NewMove = Move)),
+ best_move(Alive, OtherPlayerAlive, T, NewScore, Move).
+
+
 % Helper predicate for generating possible moves
 poss_moves(Alive, OtherPlayerAlive, PossMoves) :-
  findall(
@@ -103,18 +127,6 @@ poss_moves(Alive, OtherPlayerAlive, PossMoves) :-
 
 
 
-
-
-land_grab(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
- board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
- (PlayerColour == 'r' -> (
- \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
-     (R2L - B2L) > (RL - BL)));
-    (
- \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
-     (B2L - R2L) > (BL - RL)))).
 
 minimax(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
  board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),

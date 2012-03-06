@@ -1,6 +1,8 @@
 test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
+ % Run the tests
  test(N, FirstPlayerStrategy, SecondPlayerStrategy, NumDraws, FPWins, SPWins,
      LongestGame, ShortestGame, TotalMoves, TotalTime),
+ % Print stats
  format('Number of draws: ~d~n', [NumDraws]),
  format('Number of wins for player 1 (blue): ~d~n', [FPWins]),
  format('Number of wins for player 2 (red): ~d~n', [SPWins]),
@@ -9,12 +11,15 @@ test_strategy(N, FirstPlayerStrategy, SecondPlayerStrategy) :-
  format('Average game length (including exhaustives): ~d~n', [TotalMoves / N]),
  format('Average game time: ~d~n', [TotalTime / N]).
 
+% Base case for the test predicate
 test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
     ShortestGame, TotalMoves, TotalTime) :-
  !,
+ % Run and time the test
  statistics(walltime, [Start,_]),
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(walltime, [End,_]),
+ % Set output variables
  (member(WinningPlayer, ['draw', 'exhaust', 'stalemate']) ->
    NumDraws is 1 ;
    NumDraws is 0),
@@ -25,14 +30,18 @@ test(1, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
  TotalMoves is NumMoves,
  TotalTime is End - Start.
 
+% Recursive case for the test predicate
 test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
     ShortestGame, TotalMoves, TotalTime) :-
+ % Recurse
  NewN is N - 1,
  test(NewN, FPStrategy, SPStrategy, RNumDraws, RFPWins, RSPWins, RLongestGame,
      RShortestGame, RTotalMoves, RTotalTime),
+ % Run and time the test
  statistics(walltime, [Start,_]),
  play(quiet, FPStrategy, SPStrategy, NumMoves, WinningPlayer),
  statistics(walltime, [End,_]),
+ % Set output variables
  (member(WinningPlayer, ['draw', 'exhaust', 'stalemate']) ->
    NumDraws is RNumDraws + 1 ;
    NumDraws is RNumDraws),

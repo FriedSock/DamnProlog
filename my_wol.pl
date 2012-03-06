@@ -51,20 +51,23 @@ test(N, FPStrategy, SPStrategy,
 % Bloodlust strategy
 bloodlust(b, [Blue, Red], [NewBlue, Red], Move) :-
  poss_moves(Blue, Red, PossMoves),
- bloodlust_best_move(Blue, Red, PossMoves, 100, _, Move),
+ bloodlust_best_move(b, Blue, Red, PossMoves, 100, _, Move),
  alter_board(Move, Blue, NewBlue).
 
 bloodlust(r, [Blue, Red], [Blue, NewRed], Move) :-
  poss_moves(Red, Blue, PossMoves),
- bloodlust_best_move(Red, Blue, PossMoves, 100, _, Move),
+ bloodlust_best_move(r, Red, Blue, PossMoves, 100, _, Move),
  alter_board(Move, Red, NewRed).
 
-bloodlust_best_move(_, _, [], _, Move, Move).
+bloodlust_best_move(_, _, _, [], _, Move, Move).
 
-bloodlust_best_move(Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
+bloodlust_best_move(Player, Alive, OtherPlayerAlive, [H|T], Score, Move, OutMove) :-
  alter_board(H, OtherPlayerAlive, NewOtherPlayerAlive),
- next_generation([Alive, NewOtherPlayerAlive], [_, NextOtherPlayerAlive]),
+ (Player = r ->
+   next_generation([NewOtherPlayerAlive, Alive], [NextOtherPlayerAlive, _]) ;
+   next_generation([Alive, NewOtherPlayerAlive], [_, NextOtherPlayerAlive])),
  length(NextOtherPlayerAlive, MoveScore),
+ format('~d~q~n',[MoveScore, H]),
  (MoveScore < Score ->
    (NewScore is MoveScore , NewMove = H) ;
    (NewScore is Score , NewMove = Move)),

@@ -58,60 +58,49 @@ test(N, FPStrategy, SPStrategy, NumDraws, FPWins, SPWins, LongestGame,
  TotalMoves is RTotalMoves + NumMoves,
  TotalTime is RTotalTime + End - Start.
 
-bloodlust(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
- board_after_move(PlayerColour, CurrentBoardState, NewBoardState, Move),
- NewBoardState == [Blue, Red],
- ((PlayerColour == 'r') -> (
+bloodlust(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
+ (PlayerColour == 'r' -> (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     len(Blue2, B2L), len(Blue, BL), B2L > BL))),
- ((PlayerColour == 'b') -> (
+     length(Blue2, B2L), length(Blue, BL), B2L < BL));
+    (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     len(Red2, R2L), len(Red, RL), R2L > RL))).
+     length(Red2, R2L), length(Red, RL), R2L < RL))).
 
-self_preservation(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
- board_after_move(PlayerColour, CurrentBoardState, NewBoardState, Move),
- NewBoardState == [Blue, Red],
- ((PlayerColour == 'r') -> (
+self_preservation(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
+ (PlayerColour == 'r' -> (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     len(Blue2, B2L), len(Blue, BL), B2L < BL))),
- ((PlayerColour == 'b') -> (
+     length(Blue2, B2L), length(Blue, BL), B2L > BL));
+    (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     len(Red2, R2L), len(Red, RL), R2L < RL))).
-    
+     length(Red2, R2L), length(Red, RL), R2L > RL))).
 
-land_grab(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
- board_after_move(PlayerColour, CurrentBoardState, NewBoardState, Move),
- NewBoardState == [Blue, Red],
- ((PlayerColour == 'r') -> (
+land_grab(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
+ (PlayerColour == 'r' -> (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     len(Red2, R2L), len(Red, RL), len(Blue2, B2L), len(Blue, BL), 
-    (R2L - B2L) > (RL - BL)))),
- ((PlayerColour == 'b') -> (
+     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
+     (R2L - B2L) > (RL -BL)));
+    (
  \+ (board_after_move(PlayerColour, CurrentBoardState, [Blue2, Red2], Move2),
-     len(Red2, R2L), len(Red, RL), len(Blue2, B2L), len(Blue, BL), 
-    (B2L - R2L) > (BL - RL)))).
+     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
+     (B2L - R2L) > (BL - RL)))).
 
-minimax(PlayerColour, CurrentBoardState, NewBoardState, Move) :-
- NewBoardState == [Blue, Red],
- ((PlayerColour == 'r') -> (
- board_after_move('r', CurrentBoardState, IntermediateBoardState, Move),
- land_grab('b', IntermediateBoardState, [Blue, Red]),
- \+ (board_after_move('r', CurrentBoardState, IntermediateBoardState2, Move2),
-     land_grab('b', IntermediateBoardState2, [Blue2, Red2]),
-     len(Red2, R2L), len(Red2, RL), len(Blue2, B2L), len(Blue, BL), 
-    (B2L - R2L) < (BL - RL)))),
- ((PlayerColour == 'b') -> (
- board_after_move('b', CurrentBoardState, IntermediateBoardState, Move),
- land_grab('r', IntermediateBoardState, [Blue, Red]),
- \+ (board_after_move('b', CurrentBoardState, IntermediateBoardState2, Move2),
-     land_grab('r', IntermediateBoardState2, [Blue2, Red2]),
-     len(Red2, R2L), len(Red2, RL), len(Blue2, B2L), len(Blue, BL), 
-    (R2L - B2L) < (RL - BL)))).
- 
-     
+minimax(PlayerColour, CurrentBoardState, [Blue, Red], Move) :-
+ board_after_move(PlayerColour, CurrentBoardState, [Blue, Red], Move),
+ (PlayerColour == 'r' -> (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, IntermediateBoardState, Move2),
+     land_grab('b', IntermediateBoardState, [Blue2, Red2], Move3),
+     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
+     (B2L - R2L) < (BL - RL)));
+    (
+ \+ (board_after_move(PlayerColour, CurrentBoardState, IntermediateBoardState, Move2),
+     land_grab('r', IntermediateBoardState, [Blue2, Red2], Move3),
+     length(Red2, R2L), length(Red, RL), length(Blue2, B2L), length(Blue, BL), 
+     (R2L - B2L) < (RL - BL)))).
 
 board_after_move(PlayerColour, [Blue, Red], NewBoardState, Move) :-
- draw_board([Blue, Red]),
  (PlayerColour == 'r' -> (possible_move(Red, Blue, Move),
                           alter_board(Move, Blue, NewBlue),
                           next_generation([NewBlue, Red], NewBoardState));
